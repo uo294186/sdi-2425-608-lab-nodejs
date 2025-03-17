@@ -14,6 +14,14 @@ app.use(expressSession({
   saveUninitialized: true
 }));
 
+const userSessionRouter = require("./routes/userSessionRouter.js");
+const userAudiosRouter = require("./routes/userAudiosRouter.js")
+app.use("/songs/add", userSessionRouter);
+app.use("/publications",userSessionRouter);
+app.use("/audios/", userAudiosRouter);
+app.use("/shop/",userSessionRouter);
+
+
 let crypto = require("crypto");
 let fileUpload = require("express-fileupload");
 app.use(fileUpload({

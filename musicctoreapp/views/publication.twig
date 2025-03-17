@@ -6,7 +6,7 @@
 
 <!-- Agregar Canción -->
 <div class="row text-right">
-	<a href="/canciones/agregar" class="btn btn-info" role="button">Agregar canción</a>
+	<a href="/songs/add" class="btn btn-info" role="button">Agregar canción</a>
 </div>
 
 <div class="table-responsive">
@@ -19,12 +19,12 @@
 			</tr>
 		</thead>
 		<tbody>
-		{% for cancion in canciones %}
+		{% for song in songs %}
 			<tr>
-				<td>{{ cancion.nombre }}</td>
-				<td>{{ cancion.genero }}</td>
-				<td><a href="/cancion/modificar/{{ cancion._id.toString() }}">Modificar</a> <br>
-					<a href="/cancion/eliminar/{{ cancion._id.toString() }}">Eliminar</a> <br>
+				<td>{{ song.title }}</td>
+				<td>{{ song.kind }}</td>
+				<td><a href="/songs/edit/{{ song._id }}">Modificar</a> <br>
+					<a href="/songs/delete/{{ song._id }}">Eliminar</a> <br>
 			    </td>
 			</tr>
 		{% endfor %}
@@ -34,7 +34,7 @@
 
 <!-- Agregar Canción -->
 <div class="row text-right">
-	<a href="/canciones/agregar" class="btn btn-info" role="button">Agregar canción</a>
+	<a href="/songs/add" class="btn btn-info" role="button">Agregar canción</a>
 </div>
 
 {% endblock %}
