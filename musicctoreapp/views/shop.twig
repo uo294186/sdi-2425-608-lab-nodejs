@@ -34,6 +34,16 @@
                     <div class="small">{{ song.author }}</div>
                     <div class="text-right">{{ song.price }}</div>
                 </a>
+
+                <form class="form-horizontal" method="post" action="/songs/favorites/add/{{ song._id }}" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <input type="hidden" name = "title" value={{ song.title }}>
+                            <input type="hidden" name="price" value={{ song.price }}>
+                            <button type="submit" class="btn btn-primary">Agregar a favoritos</button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
         {% endfor %}
