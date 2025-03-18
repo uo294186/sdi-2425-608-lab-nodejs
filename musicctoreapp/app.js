@@ -15,9 +15,12 @@ app.use(expressSession({
 }));
 
 const userSessionRouter = require("./routes/userSessionRouter.js");
-const userAudiosRouter = require("./routes/userAudiosRouter.js")
+const userAudiosRouter = require("./routes/userAudiosRouter.js");
+const userFavoritesRouter = require("./routes/userFavoritesRouter.js");
+app.use("/songs/favorites", userFavoritesRouter);
 app.use("/songs/add", userSessionRouter);
 app.use("/publications",userSessionRouter);
+app.use("/comments", userSessionRouter);
 app.use("/audios/", userAudiosRouter);
 app.use("/shop/",userSessionRouter);
 
@@ -42,7 +45,15 @@ const dbClient = new MongoClient(connectionStrings);
 let songsRepository = require("./repositories/songsRepository");
 songsRepository.init(app, dbClient);
 
-require("./routes/songs.js")(app, songsRepository);
+let favoriteSongsRepository = require("./repositories/favoriteSongsRepository");
+favoriteSongsRepository.init(app, dbClient);
+
+let commentsRepository = require("./repositories/commentsRepository");
+commentsRepository.init(app, dbClient);
+
+require("./routes/songs/favorites.js")(app,favoriteSongsRepository);
+require("./routes/songs.js")(app, songsRepository, commentsRepository);
+require("./routes/songs/comments")(app, commentsRepository);
 require("./routes/authors.js")(app);
 
 const usersRepository = require("./repositories/usersRepository.js");
