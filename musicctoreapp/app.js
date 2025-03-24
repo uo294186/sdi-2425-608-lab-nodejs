@@ -20,6 +20,8 @@ const userFavoritesRouter = require("./routes/userFavoritesRouter.js");
 app.use("/songs/favorites", userFavoritesRouter);
 app.use("/songs/add", userSessionRouter);
 app.use("/publications",userSessionRouter);
+app.use("/songs/buy",userSessionRouter);
+app.use("/purchases",userSessionRouter);
 app.use("/comments", userSessionRouter);
 app.use("/audios/", userAudiosRouter);
 app.use("/shop/",userSessionRouter);
