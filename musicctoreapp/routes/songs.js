@@ -188,19 +188,44 @@ module.exports=function (app, songsRepository, commentsRepository){
 
     app.post("/songs/buy/:id", function (req, res){
        let songId = new ObjectId(req.params.id);
-       let shop = {
-           user: req.session.user,
-           song_id : songId
-       }
-       songsRepository.buySong(shop).then(result=>{
-           if(result.insertedId === null || typeof (result.insertedId) === undefined){
-               res.send(("Se ha producido un error al comprar la canción"));
+
+       let filter = {_id: songId};
+
+       songsRepository.findSong(filter, {}).then(song=>{
+
+           if(song.author === req.session.user){
+                res.send("Eres el autor de la canción");
            }else{
-               res.redirect("/purchases");
+
+               filter = {song_id: songId, user: req.session.user};
+
+                songsRepository.getPurchases(filter, {}).then(purchasedIds=>{
+                    if(purchasedIds.length > 0){
+                        res.send("Ya has comprado esta canción");
+                    }else{
+                        let shop = {
+                            user: req.session.user,
+                            song_id : songId
+                        }
+                        songsRepository.buySong(shop).then(result=>{
+                            if(result.insertedId === null || typeof (result.insertedId) === undefined){
+                                res.send(("Se ha producido un error al comprar la canción"));
+                            }else{
+                                res.redirect("/purchases");
+                            }
+                        }).catch(error=>{
+                            res.send("Se ha producido un error al comprar la canción "+error);
+                        });
+                    }
+                }).catch(error=>{
+                    res.send("Se ha producido un error al comprar la canción "+error);
+                });
            }
+
        }).catch(error=>{
            res.send("Se ha producido un error al comprar la canción "+error);
-       })
+       });
+
     });
 
     app.get("/purchases", function (req, res){
@@ -227,11 +252,24 @@ module.exports=function (app, songsRepository, commentsRepository){
 
             filter = {song_id: new ObjectId(req.params.id)};
 
-            commentsRepository.getComments(filter, options).then(comments=>{
-                res.render("songs/song.twig", {song:song, comments:comments});
+            let isAuthor = req.session.user === song.author;
+            let hasBought = false;
+
+            let purchaseFilter = {song_id: new ObjectId(req.params.id),
+                user: req.session.user};
+
+            songsRepository.getPurchases(purchaseFilter, {}).then(purchasedIds=>{
+                hasBought = purchasedIds.length !== 0;
+                commentsRepository.getComments(filter, options).then(comments=>{
+                    res.render("songs/song.twig", {song:song, comments:comments, isAuthor:isAuthor, hasBought:hasBought});
+                }).catch(error=>{
+                    res.send("Se ha producido un error al buscar los comentarios "+error)
+                })
             }).catch(error=>{
-                res.send("Se ha producido un error al buscar los comentarios "+error)
+                res.send("Se ha producido un error al buscar la canción "+error)
             })
+
+
 
 
         }).catch(error=>{
