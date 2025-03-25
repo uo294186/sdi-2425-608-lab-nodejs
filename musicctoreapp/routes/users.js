@@ -15,9 +15,9 @@ module.exports = function (app, usersRepository) {
       password:securePassword
     };
     usersRepository.insertUser(user).then(userId=>{
-      res.redirect("/users/login" + "?message=Nuevo usuario registrado" + "&messageType=alert-info");
+      res.redirect("/error" + "?message=Nuevo usuario registrado" + "&messageType=alert-info");
     }).catch(error=>{
-      res.redirect("/users/signup" + "?message=Se ha producido un error al registrar el usuario"
+      res.redirect("/error" + "?message=Se ha producido un error al registrar el usuario"
           + "&messageType=alert-danger");
 
     })
@@ -38,7 +38,7 @@ module.exports = function (app, usersRepository) {
     usersRepository.findUser(filter, options).then(user=>{
       if(user==null){
         req.session.user = null;
-        res.redirect("/users/login" +
+        res.redirect("/error" +
         "?message=Email o password incorrecto"+
         "&messageType=alert-danger");
       }else{
@@ -47,7 +47,7 @@ module.exports = function (app, usersRepository) {
       }
     }).catch(error=> {
       req.session.user = null;
-      res.redirect("/users/login" +
+      res.redirect("/error" +
           "?message=Se ha producido un error al buscar el usuario"+
           "&messageType=alert-danger ");
     });
@@ -57,4 +57,8 @@ module.exports = function (app, usersRepository) {
     req.session.user = null;
     res.send("El usuario se ha desconectado correctamente");
   });
+
+  app.get("/error", function (req,res){
+    res.render("error.twig", {message: req.query.message});
+  })
 }

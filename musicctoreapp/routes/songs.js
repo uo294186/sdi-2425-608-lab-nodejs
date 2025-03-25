@@ -49,7 +49,10 @@ module.exports=function (app, songsRepository, commentsRepository){
            }
            res.render("shop.twig", response);
        }).catch(error=>{
-           res.send("Se ha producido un error al listar las canciones "+error);
+           res.redirect("/error" +
+               "?message="+"Se ha producido un error al listar las canciones "+error+
+               "&messageType=alert-danger");
+           //res.send("Se ha producido un error al listar las canciones "+error);
        });
     });
 
@@ -69,7 +72,10 @@ module.exports=function (app, songsRepository, commentsRepository){
         songsRepository.getSongs(filter, options).then(songs => {
             res.render("publication.twig", {songs: songs});
         }).catch(error => {
-            res.send("Se ha producido un error al listar las publicaciones del usuario:" + error)
+            res.redirect("/error" +
+                "?message="+"Se ha producido un error al listar las publicaciones del usuario:"+error+
+                "&messageType=alert-danger");
+            //res.send("Se ha producido un error al listar las publicaciones del usuario:" + error)
         });
     })
 
@@ -94,17 +100,30 @@ module.exports=function (app, songsRepository, commentsRepository){
                                 let audio = req.files.audio;
                                 audio.mv(app.get("uploadPath")+"/public/audios/"+result.songId+".mp3")
                                     .then(res.redirect("/publications"))
-                                    .catch(error=> res.send("Error al subir el audio de la canción"));
+                                    .catch(error=> {
+                                        res.redirect("/error" +
+                                            "?message="+"Error al subir el audio de la canción :"+result.error+
+                                            "&messageType=alert-danger");
+                                        //res.send("Error al subir el audio de la canción")
+                                        });
                             }else{
                                 res.redirect("/publications");
                             }
                         })
-                        .catch(error=>res.send("Error al subir la portada de la canción"));
+                        .catch(error=>{
+                            res.redirect("/error" +
+                                "?message="+"Error al subir la portada de la canción :"+error+
+                                "&messageType=alert-danger");
+                            //res.send("Error al subir la portada de la canción")
+                            });
                 }else{
                     res.redirect("/publications");
                 }
             }else{
-                res.send("Error al insertar canción :"+result.error);
+                res.redirect("/error" +
+                    "?message="+"Error al insertar canción :"+result.error+
+                    "&messageType=alert-danger");
+                //res.send("Error al insertar canción :"+result.error);
             }
         })
     });
@@ -114,7 +133,10 @@ module.exports=function (app, songsRepository, commentsRepository){
        songsRepository.findSong(filter, {}).then(song=>{
            res.render("songs/edit.twig", {song: song});
        }).catch(error=>{
-           res.send("Se ha producido un error al recuperar la canción "+error);
+           res.redirect("/error" +
+               "?message="+"Se ha producido un error al recuperar la canción "+
+               "&messageType=alert-danger");
+           //res.send("Se ha producido un error al recuperar la canción "+error);
        });
     });
 
@@ -133,13 +155,19 @@ module.exports=function (app, songsRepository, commentsRepository){
         songsRepository.updateSong(song, filter, options).then(result=>{
             step1UpdateCover(req.files, songId, function (result){
                 if(result==null){
-                    res.send("Error al actualizar la portada o el audio de la canción");
+                    res.redirect("/error" +
+                        "?message="+"Error al actualizar la portada o el audio de la canción"+
+                        "&messageType=alert-danger");
+                    //res.send("Error al actualizar la portada o el audio de la canción");
                 }else{
                     res.redirect("/publications");
                 }
             });
         }).catch(error=>{
-            res.send("Se ha producido un error al modificar la canción "+error);
+            res.redirect("/error" +
+                "?message="+"Se ha producido un error al modificar la canción "+error+
+                "&messageType=alert-danger");
+            //res.send("Se ha producido un error al modificar la canción "+error);
         })
     });
 
@@ -177,12 +205,18 @@ module.exports=function (app, songsRepository, commentsRepository){
        let filter = {_id:new ObjectId(req.params.id)};
        songsRepository.deleteSong(filter, {}).then(result=>{
            if(result===null || result.deletedCount ===0){
-               res.send("No se ha podido eliminar el registro");
+               res.redirect("/error" +
+                   "?message="+"No se ha podidio eliminar el registro "+
+                   "&messageType=alert-danger");
+               //res.send("No se ha podido eliminar el registro");
            }else{
                res.redirect("/publications");
            }
        }).catch(error=>{
-           res.send("Se ha producido un error al intentar eliminar la canción: "+error);
+           res.redirect("/error" +
+               "?message="+"Se ha producido un error al intentar eliminar la canción "+error+
+               "&messageType=alert-danger");
+           //res.send("Se ha producido un error al intentar eliminar la canción: "+error);
        })
     });
 
@@ -194,14 +228,20 @@ module.exports=function (app, songsRepository, commentsRepository){
        songsRepository.findSong(filter, {}).then(song=>{
 
            if(song.author === req.session.user){
-                res.send("Eres el autor de la canción");
+                //res.send("Eres el autor de la canción");
+               res.redirect("/error" +
+                   "?message="+"Eres el autor de la canción"+
+                   "&messageType=alert-danger");
            }else{
 
                filter = {song_id: songId, user: req.session.user};
 
                 songsRepository.getPurchases(filter, {}).then(purchasedIds=>{
                     if(purchasedIds.length > 0){
-                        res.send("Ya has comprado esta canción");
+                        //res.send("Ya has comprado esta canción");
+                        res.redirect("/error" +
+                            "?message="+"Ya has comprado esta canción"+
+                            "&messageType=alert-danger");
                     }else{
                         let shop = {
                             user: req.session.user,
@@ -209,21 +249,33 @@ module.exports=function (app, songsRepository, commentsRepository){
                         }
                         songsRepository.buySong(shop).then(result=>{
                             if(result.insertedId === null || typeof (result.insertedId) === undefined){
-                                res.send(("Se ha producido un error al comprar la canción"));
+                                res.redirect("/error" +
+                                    "?message="+"Se ha producido un error al comprar la canción"+
+                                    "&messageType=alert-danger");
+                                //res.send(("Se ha producido un error al comprar la canción"));
                             }else{
                                 res.redirect("/purchases");
                             }
                         }).catch(error=>{
-                            res.send("Se ha producido un error al comprar la canción "+error);
+                            res.redirect("/error" +
+                                "?message="+"Se ha producido un error al comprar la canción"+error+
+                                "&messageType=alert-danger");
+                            //res.send("Se ha producido un error al comprar la canción "+error);
                         });
                     }
                 }).catch(error=>{
-                    res.send("Se ha producido un error al comprar la canción "+error);
+                    res.redirect("/error" +
+                        "?message="+"Se ha producido un error al comprar la canción"+error+
+                        "&messageType=alert-danger");
+                    //res.send("Se ha producido un error al comprar la canción "+error);
                 });
            }
 
        }).catch(error=>{
-           res.send("Se ha producido un error al comprar la canción "+error);
+           res.redirect("/error" +
+               "?message="+"Se ha producido un error al comprar la canción"+error+
+               "&messageType=alert-danger");
+           //res.send("Se ha producido un error al comprar la canción "+error);
        });
 
     });
@@ -238,10 +290,16 @@ module.exports=function (app, songsRepository, commentsRepository){
            songsRepository.getSongs(filter, options).then(songs =>{
                res.render("purchase.twig", {songs:songs});
            }).catch(error=>{
-               res.send("Se ha producido un error al listar las publicaciones del usuario "+error);
+               res.redirect("/error" +
+                   "?message="+"Se ha producido un error al listar las publicaciones del usuario "+error+
+                   "&messageType=alert-danger");
+               //res.send("Se ha producido un error al listar las publicaciones del usuario "+error);
            });
        }).catch(error=>{
-           res.send("Se ha producido un error al listar las canciones del usuario "+error);
+           res.redirect("/error" +
+               "?message="+"Se ha producido un error al listar las canciones del usuario "+error+
+               "&messageType=alert-danger");
+           //res.send("Se ha producido un error al listar las canciones del usuario "+error);
        });
     });
 
@@ -263,17 +321,26 @@ module.exports=function (app, songsRepository, commentsRepository){
                 commentsRepository.getComments(filter, options).then(comments=>{
                     res.render("songs/song.twig", {song:song, comments:comments, isAuthor:isAuthor, hasBought:hasBought});
                 }).catch(error=>{
-                    res.send("Se ha producido un error al buscar los comentarios "+error)
+                    res.redirect("/error" +
+                        "?message="+"Se ha producido un error al buscar los comentarios "+error+
+                        "&messageType=alert-danger");
+                    //res.send("Se ha producido un error al buscar los comentarios "+error)
                 })
             }).catch(error=>{
-                res.send("Se ha producido un error al buscar la canción "+error)
+                res.redirect("/error" +
+                    "?message="+"Se ha producido un error al buscar la canción "+error+
+                    "&messageType=alert-danger");
+                //res.send("Se ha producido un error al buscar la canción "+error)
             })
 
 
 
 
         }).catch(error=>{
-            res.send("Se ha producido un error al buscar la canción "+error);
+            res.redirect("/error" +
+                "?message="+"Se ha producido un error al buscar la canción "+error+
+                "&messageType=alert-danger");
+            //res.send("Se ha producido un error al buscar la canción "+error);
         })
     });
 
