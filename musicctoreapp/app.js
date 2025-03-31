@@ -6,13 +6,21 @@ let logger = require('morgan');
 
 let indexRouter = require('./routes/index');
 
+
+
 let app = express();
+let jwt = require("jsonwebtoken");
+app.set("jwt", jwt);
 let expressSession = require("express-session");
 app.use(expressSession({
   secret:"abcdefg",
   resave: true,
   saveUninitialized: true
 }));
+let bodyParser = require('body-parser');
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended:true}));
+
 
 const userSessionRouter = require("./routes/userSessionRouter.js");
 const userAudiosRouter = require("./routes/userAudiosRouter.js");
@@ -29,6 +37,9 @@ const userAuthorRouter = require('./routes/userAuthorRouter');
 app.use("/songs/edit",userAuthorRouter);
 app.use("/songs/delete",userAuthorRouter);
 
+const userTokenRouter = require("./routes/userTokenRouter");
+app.use("/api/v1.0/songs/", userTokenRouter);
+
 
 let crypto = require("crypto");
 let fileUpload = require("express-fileupload");
@@ -40,9 +51,7 @@ app.set("uploadPath", __dirname);
 app.set("clave", "abcdefg");
 app.set("crypto", crypto);
 
-let bodyParser = require('body-parser');
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended:true}));
+
 
 const {MongoClient} = require("mongodb");
 const connectionStrings = "mongodb+srv://admin:M€voyamatar5@musicstoreapp.uli9s.mongodb.net/?retryWrites=true&w=majority&appName=musicstoreapp";
@@ -50,20 +59,22 @@ const dbClient = new MongoClient(connectionStrings);
 let songsRepository = require("./repositories/songsRepository");
 songsRepository.init(app, dbClient);
 
+const usersRepository = require("./repositories/usersRepository.js");
+usersRepository.init(app, dbClient);
+
 let favoriteSongsRepository = require("./repositories/favoriteSongsRepository");
 favoriteSongsRepository.init(app, dbClient);
 
 let commentsRepository = require("./repositories/commentsRepository");
 commentsRepository.init(app, dbClient);
 
-require("./routes/api/songsAPIv1.0.js")(app, songsRepository);
+require("./routes/api/songsAPIv1.0.js")(app, songsRepository, usersRepository);
 require("./routes/songs/favorites.js")(app,favoriteSongsRepository);
 require("./routes/songs.js")(app, songsRepository, commentsRepository);
 require("./routes/songs/comments")(app, commentsRepository);
 require("./routes/authors.js")(app);
 
-const usersRepository = require("./repositories/usersRepository.js");
-usersRepository.init(app, dbClient);
+
 require("./routes/users.js")(app, usersRepository);
 
 // view engine setup
