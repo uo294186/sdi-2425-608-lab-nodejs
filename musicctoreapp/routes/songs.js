@@ -306,6 +306,7 @@ module.exports=function (app, songsRepository, commentsRepository){
     app.get('/songs/:id', function(req, res) {
         let filter = {_id: new ObjectId(req.params.id)};
         let options={};
+        let user = req.session.user;
         songsRepository.findSong(filter, options).then(song =>{
 
             filter = {song_id: new ObjectId(req.params.id)};
@@ -319,7 +320,21 @@ module.exports=function (app, songsRepository, commentsRepository){
             songsRepository.getPurchases(purchaseFilter, {}).then(purchasedIds=>{
                 hasBought = purchasedIds.length !== 0;
                 commentsRepository.getComments(filter, options).then(comments=>{
-                    res.render("songs/song.twig", {song:song, comments:comments, isAuthor:isAuthor, hasBought:hasBought});
+                    let settings = {
+                        url: "https://api.currencyapi.com/v3/latest?apikey=cur_live_oOnhjjtFoWIVO0IhJRs0JgyB1rzEoo6z5sUpzbSw&base_currency=EUR&currencies=USD",
+                        method: "get",
+                    }
+                    let rest = app.get("rest");
+                    rest(settings, function (error, response, body){
+                        console.log("cod: "+response.statusCode+" Cuerpo: "+body);
+                        let responseObject = JSON.parse(body);
+                        let rateUDS = responseObject.data.USD.value;
+                        let songValue = song.price/rateUDS;
+                        song.usd = Math.round(songValue*100)/100;
+
+                        res.render("songs/song.twig", {song:song, comments:comments, isAuthor:isAuthor, hasBought:hasBought});
+                    })
+
                 }).catch(error=>{
                     res.redirect("/error" +
                         "?message="+"Se ha producido un error al buscar los comentarios "+error+

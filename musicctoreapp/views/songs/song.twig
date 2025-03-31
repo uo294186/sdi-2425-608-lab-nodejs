@@ -18,20 +18,13 @@
 				  </audio>
 			  {% else %}
 				  <form class="form-horizontal" method="post" action="/songs/buy/{{ song._id }}">
-					  <button type="submit" class="btn btn-primary">Comprar: {{ song.price }}€</button>
+					  <button type="submit" class="btn btn-primary">Comprar: {{ song.price }}€ - {{ song.usd }}$</button>
 				  </form>
 			  {% endif %}
 			 <!-- Cambiar el precio por "reproducir" si ya está comprada -->
 		  </div>
 		</div>
 	  </div>
-
-	<div>
-		<p>Formulario para probar validación en POST</p>
-		<form class="form-horizontal" method="post" action="/songs/buy/{{ song._id }}">
-			<button type="submit" class="btn btn-primary">Comprar: {{ song.price }}€</button>
-		</form>
-	</div>
 	  
 	 <!-- -->
 	 <div class="row" style="margin-top: 20px;" >
