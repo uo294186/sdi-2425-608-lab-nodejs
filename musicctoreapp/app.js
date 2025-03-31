@@ -56,6 +56,7 @@ favoriteSongsRepository.init(app, dbClient);
 let commentsRepository = require("./repositories/commentsRepository");
 commentsRepository.init(app, dbClient);
 
+require("./routes/api/songsAPIv1.0.js")(app, songsRepository);
 require("./routes/songs/favorites.js")(app,favoriteSongsRepository);
 require("./routes/songs.js")(app, songsRepository, commentsRepository);
 require("./routes/songs/comments")(app, commentsRepository);
