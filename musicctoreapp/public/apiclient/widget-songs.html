@@ -68,7 +68,9 @@
                 $("#"+_id).remove();
             },
             error: function (error){
-                $("#main-container").load("widget-login.html");
+                //$("#main-container").load("widget-login.html");
+                $("#widget-songs")
+                    .prepend("<div class='alert alert-danger'>"+error.responseJSON.error+"</div>");
             }
         })
     }

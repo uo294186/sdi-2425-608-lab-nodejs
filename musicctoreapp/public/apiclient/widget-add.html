@@ -43,7 +43,17 @@
         $("#main-container").load("widget-songs.html");
       },
       error: function (error) {
-        $("#main-container").load("widget-login.html");
+        //$("#main-container").load("widget-login.html");
+        console.log(error);
+        $("#widget-agregar")
+                .prepend("<div class='alert alert-danger'>"+error.responseJSON.error+"</div>");
+
+        if(error.responseJSON.errors !== undefined){
+          for(let i = 0; i < error.responseJSON.errors.length; i++){
+            $("#widget-agregar")
+                    .prepend("<div class='alert alert-danger'>"+error.responseJSON.errors[i]+"</div>");
+          }
+        }
       }
     });
   }
